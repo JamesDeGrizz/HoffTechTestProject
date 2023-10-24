@@ -1,0 +1,18 @@
+{
+  "ExtendedData": {
+    "inputs": [
+      "https://www.cbr.ru/DailyInfoWebServ/DailyInfo.asmx?WSDL"
+    ],
+    "collectionTypes": [
+      "System.Array",
+      "System.Collections.Generic.Dictionary`2"
+    ],
+    "namespaceMappings": [
+      "*, Integrations.Cbr"
+    ],
+    "references": [
+    ],
+    "targetFramework": "net7.0",
+    "typeReuseMode": "All"
+  }
+}
