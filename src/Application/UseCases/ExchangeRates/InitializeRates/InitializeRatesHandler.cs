@@ -16,21 +16,35 @@ public class InitializeRatesHandler : IRequestHandler<InitializeRatesQuery, bool
     public InitializeRatesHandler(DailyInfoSoap cbrClient, IExchangeRatesRepository ratesRepository,
         IConfiguration configuration)
     {
+        if (cbrClient is null)
+        {
+            throw new ArgumentException(nameof(cbrClient));
+        }
+        if (configuration is null)
+        {
+            throw new ArgumentException(nameof(configuration));
+        }
+        if (ratesRepository is null)
+        {
+            throw new ArgumentException(nameof(ratesRepository));
+        }
+
         _cbrClient = cbrClient;
         _ratesRepository = ratesRepository;
 
-        _currencyCode = configuration.GetValue<ushort>("Internal:CurrencyCode");
+        var internalSection = configuration.GetRequiredSection("Internal");
+        _currencyCode = internalSection.GetValue<ushort>("CurrencyCode");
     }
 
     public async Task<bool> Handle(InitializeRatesQuery request, CancellationToken cancellationToken)
     {
-        var dayBeforeYesterdayExchangeRates = await _cbrClient.GetRatesOnDateAsync( DateTime.Now.AddDays(-2));
+        var dayBeforeYesterdayExchangeRates = await _cbrClient.GetRatesOnDateAsync(DateTime.Now.AddDays(-2));
         var dayBeforeYesterdayExchangeRate = dayBeforeYesterdayExchangeRates.First(x => x.Vcode == _currencyCode).Vcurs;
 
-        var yesterdayExchangeRates = await _cbrClient.GetRatesOnDateAsync( DateTime.Now.AddDays(-1));
+        var yesterdayExchangeRates = await _cbrClient.GetRatesOnDateAsync(DateTime.Now.AddDays(-1));
         var yesterdayExchangeRate = yesterdayExchangeRates.First(x => x.Vcode == _currencyCode).Vcurs;
 
-        var todayExchangeRates = await _cbrClient.GetRatesOnDateAsync( DateTime.Now);
+        var todayExchangeRates = await _cbrClient.GetRatesOnDateAsync(DateTime.Now);
         var todayExchangeRate = todayExchangeRates.First(x => x.Vcode == _currencyCode).Vcurs;
 
         decimal? tomorrowExchangeRate = null;
