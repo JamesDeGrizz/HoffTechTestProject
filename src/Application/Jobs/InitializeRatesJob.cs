@@ -1,6 +1,6 @@
-﻿using Application.Exceptions;
-using Application.Helpers;
-using Application.Services;
+﻿using Application.Helpers;
+using Application.UseCases.ExchangeRates.InitializeRates;
+using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Quartz;
@@ -10,13 +10,14 @@ namespace Application.Jobs;
 public class InitializeRatesJob : IJob
 {
     private readonly ILogger<InitializeRatesJob> _logger;
-    private readonly IExchangeRatesService _exchangeRatesService;
+    private readonly IMediator _mediator;
+
     private readonly int _intervalMinutes;
-    
-    public InitializeRatesJob(ILogger<InitializeRatesJob> logger, IExchangeRatesService exchangeRatesService, IConfiguration configuration)
+
+    public InitializeRatesJob(ILogger<InitializeRatesJob> logger, IConfiguration configuration, IMediator mediator)
     {
         _logger = logger;
-        _exchangeRatesService = exchangeRatesService;
+        _mediator = mediator;
 
         _intervalMinutes = configuration.GetValue<int>("Internal:RetryIntervalMinutes");
     }
@@ -27,15 +28,11 @@ public class InitializeRatesJob : IJob
         bool initialized = false;
         try
         {
-            initialized = await _exchangeRatesService.InitializeRatesAsync();
-        }
-        catch (NotInitializedException e)
-        {
-            _logger.LogError("Exchange rates repo is not initialized", e);
+            initialized = await _mediator.Send(new InitializeRatesQuery());
         }
         catch (Exception e)
         {
-            _logger.LogError("Unknown exception", e);
+            _logger.LogError(e, "Unknown exception");
         }
 
         if (!initialized)

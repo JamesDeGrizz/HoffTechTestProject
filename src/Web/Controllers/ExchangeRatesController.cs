@@ -1,8 +1,5 @@
-﻿using Application.Exceptions;
-using Application.Helpers;
-using Application.Models;
-using Application.Services;
-using Microsoft.AspNetCore.Http;
+﻿using Application.UseCases.ExchangeRates.GetExchangeRateForDay;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Web.Controllers;
@@ -11,46 +8,15 @@ namespace Web.Controllers;
 [ApiController]
 public class ExchangeRatesController : ControllerBase
 {
-    private readonly IConfiguration _configuration;
-    private readonly IExchangeRatesService _exchangeRatesService;
+    private readonly IMediator _mediator;
 
-    public ExchangeRatesController(IConfiguration configuration, IExchangeRatesService exchangeRatesService)
-    { 
-        _configuration = configuration;
-        _exchangeRatesService = exchangeRatesService;
-    }
+    public ExchangeRatesController(IMediator mediator)
+     => _mediator = mediator;
 
     [HttpGet("to-ruble")]
-    [ProducesResponseType(typeof(RubleConversionRateResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(GetExchangeRateForDayResult), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> RubleConversionRate(double x, double y) 
-    {
-        var point = new Point(x, y);
-        var radius = _configuration.GetValue<double>("Internal:CircleRadius");
-        if (!CircleHelper.IsEntry(point, radius))
-        {
-            return BadRequest($"Point [{x}, {y}] is not in circle with radius {radius}");
-        }
-        var requestDay = CircleHelper.GetDayByQuarter(point);
-
-        try
-        {
-            var rate = await _exchangeRatesService.GetExchangeRateAsync(requestDay);
-
-            return Ok(new RubleConversionRateResult
-            {
-                Rate = 1 / rate,
-                Date = requestDay
-            });
-        }
-        catch (NoValueException)
-        {
-            return BadRequest($"Don't have exchange rate for requested day");
-        }
-        catch (Exception)
-        {
-            return StatusCode(StatusCodes.Status500InternalServerError, $"Technical issues on server, please try again later");
-        }
-    }
+        => Ok(await _mediator.Send(new GetExchangeRateForDayQuery(x, y)));
 }

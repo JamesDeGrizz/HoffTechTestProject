@@ -28,4 +28,12 @@ public class ExchangeRatesRepository : IExchangeRatesRepository
         _exchangeRates[RequestDayEnum.Today] = _exchangeRates[RequestDayEnum.Tomorrow];
         _exchangeRates[RequestDayEnum.Tomorrow] = null;
     }
+
+    public void InitializeExchangeRates(decimal dayBeforeYesterdayRate, decimal yesterdayRate, decimal todayRate, decimal? tomorrowRate)
+    {
+        _exchangeRates[RequestDayEnum.DayBeforeYesterday] = dayBeforeYesterdayRate;
+        _exchangeRates[RequestDayEnum.Yesterday] = yesterdayRate;
+        _exchangeRates[RequestDayEnum.Today] = todayRate;
+        _exchangeRates[RequestDayEnum.Tomorrow] = tomorrowRate;
+    }
 }

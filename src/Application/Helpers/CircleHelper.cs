@@ -1,13 +1,14 @@
 ﻿using Application.Models;
+using Application.UseCases.ExchangeRates.GetExchangeRateForDay;
 
 namespace Application.Helpers;
 
 public static class CircleHelper
 {
-    public static bool IsEntry(Point point, double radius)
+    public static bool IsEntry(GetExchangeRateForDayQuery point, double radius)
         => Math.Pow(point.X, 2) + Math.Pow(point.Y, 2) <= Math.Pow(radius, 2);
 
-    public static RequestDayEnum GetDayByQuarter(Point point)
+    public static RequestDayEnum GetDayByQuarter(GetExchangeRateForDayQuery point)
         => (point.X, point.Y) switch
         {
             ( >= 0, >= 0) => RequestDayEnum.Today,
