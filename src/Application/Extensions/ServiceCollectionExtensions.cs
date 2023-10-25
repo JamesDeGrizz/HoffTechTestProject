@@ -1,8 +1,9 @@
-﻿using Application.Helpers;
+﻿using Application.Behaviours;
+using Application.Helpers;
 using Application.Jobs;
 using Application.Repositories;
-using Application.Services;
 using Integrations.Cbr;
+using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz;
@@ -60,7 +61,6 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddSingleton<IExchangeRatesService, ExchangeRatesService>();
         services.AddSingleton<IExchangeRatesRepository, ExchangeRatesRepository>();
 
         var cbrUrl = configuration.GetValue<string>("Internal:CbrUrl");
@@ -68,6 +68,13 @@ public static class ServiceCollectionExtensions
             ActivatorUtilities.CreateInstance<DailyInfoSoapClient>(x, EndpointConfiguration.DailyInfoSoap12, cbrUrl)
         );
 
+        return services;
+    }
+
+    public static IServiceCollection AddMediatr(this IServiceCollection services)
+    {
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(ServiceCollectionExtensions).Assembly));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(UnhandledExceptionBehaviour<,>));
         return services;
     }
 }
