@@ -21,7 +21,7 @@ public class UnhandledExceptionBehaviour<TRequest, TResponse> : IPipelineBehavio
         {
             var requestName = typeof(TRequest).Name;
 
-            _logger.LogError(e, $"Exception for query {requestName} {request}");
+            _logger.LogError(e, $"Exception for query {requestName} {@request}");
 
             throw;
         }

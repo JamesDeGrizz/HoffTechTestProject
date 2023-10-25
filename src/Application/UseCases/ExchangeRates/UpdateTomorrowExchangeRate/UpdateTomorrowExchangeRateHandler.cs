@@ -17,10 +17,24 @@ public class UpdateTomorrowExchangeRateHandler : IRequestHandler<UpdateTomorrowE
     public UpdateTomorrowExchangeRateHandler(DailyInfoSoap cbrClient, IExchangeRatesRepository ratesRepository,
         IConfiguration configuration)
     {
+        if (cbrClient is null)
+        {
+            throw new ArgumentException(nameof(cbrClient));
+        }
+        if (configuration is null)
+        {
+            throw new ArgumentException(nameof(configuration));
+        }
+        if (ratesRepository is null)
+        {
+            throw new ArgumentException(nameof(ratesRepository));
+        }
+
         _cbrClient = cbrClient;
         _ratesRepository = ratesRepository;
 
-        _currencyCode = configuration.GetValue<ushort>("Internal:CurrencyCode");
+        var internalSection = configuration.GetRequiredSection("Internal");
+        _currencyCode = internalSection.GetValue<ushort>("CurrencyCode");
     }
 
     public async Task<bool> Handle(UpdateTomorrowExchangeRateQuery request, CancellationToken cancellationToken)
